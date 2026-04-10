@@ -118,26 +118,132 @@ export function CockpitKanban() {
   );
 }
 
-function TopicCard({ topic }: { topic: Topic }) {
+({ topic }: { topic: Topic }) {
   const scoreColor =
     topic.score === 100
-      ? "var(--success)"
+      ? \"var(--success)\"
       : topic.score >= 50
-        ? "var(--info)"
+        ? \"var(--info)\"
         : topic.score > 0
-          ? "var(--warning)"
-          : "var(--text-muted)";
+          ? \"var(--warning)\"
+          : \"var(--text-muted)\";
+
+  // Visual emphasis for critical items
+  const isBlocked = topic.status === \"blocked\";
+  const isInProgress = topic.status === \"in-progress\";
 
   return (
     <div
       style={{
-        backgroundColor: "var(--card-elevated)",
-        border: "1px solid var(--border)",
-        borderRadius: "8px",
-        padding: "12px",
-        cursor: "pointer",
-        transition: "all 0.2s",
+        backgroundColor: \"var(--card-elevated)\",
+        border: isBlocked ? \"2px solid var(--error)\" : \"1px solid var(--border)\",
+        borderRadius: \"8px\",
+        padding: \"12px\",
+        cursor: \"pointer\",
+        transition: \"all 0.2s\",
+        boxShadow: isBlocked ? \"0 0 8px rgba(239, 68, 68, 0.3)\" : isInProgress ? \"0 0 6px rgba(59, 130, 246, 0.2)\" : \"none\",
       }}
+      onMouseEnter={(e) => {
+        (e.currentTarget as HTMLElement).style.borderColor = \"var(--accent)\";
+        (e.currentTarget as HTMLElement).style.boxShadow = isBlocked
+          ? \"0 0 12px rgba(239, 68, 68, 0.5)\"
+          : \"0 2px 8px rgba(0,0,0,0.1)\";
+      }}
+      onMouseLeave={(e) => {
+        (e.currentTarget as HTMLElement).style.borderColor = isBlocked ? \"var(--error)\" : \"var(--border)\";
+        (e.currentTarget as HTMLElement).style.boxShadow = isBlocked ? \"0 0 8px rgba(239, 68, 68, 0.3)\" : isInProgress ? \"0 0 6px rgba(59, 130, 246, 0.2)\" : \"none\";
+      }}
+    >
+      {/* Topic Name */}
+      <div
+        style={{
+          fontWeight: 600,
+          color: \"var(--text-primary)\",
+          fontSize: \"14px\",
+          marginBottom: \"8px\",
+        }}
+      >
+        {topic.name}
+      </div>
+
+      {/* Executor */}
+      <div
+        style={{
+          fontSize: \"12px\",
+          color: \"var(--text-secondary)\",
+          marginBottom: \"8px\",
+        }}
+      >
+        Executor: <strong>{topic.executor}</strong>
+      </div>
+
+      {/* Score Bar */}
+      <div style={{ marginBottom: \"8px\" }}>
+        <div
+          style={{
+            display: \"flex\",
+            justifyContent: \"space-between\",
+            marginBottom: \"4px\",
+            fontSize: \"11px\",
+          }}
+        >
+          <span style={{ color: \"var(--text-muted)\" }}>Progress</span>
+          <span style={{ color: scoreColor, fontWeight: 600 }}>
+            {topic.score}/100
+          </span>
+        </div>
+        <div
+          style={{
+            height: \"6px\",
+            backgroundColor: \"var(--border)\",
+            borderRadius: \"3px\",
+            overflow: \"hidden\",
+          }}
+        >
+          <div
+            style={{
+              height: \"100%\",
+              width: `${topic.score}%`,
+              backgroundColor: scoreColor,
+              transition: \"width 0.3s\",
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Blockers */}
+      {topic.blockers && topic.blockers.length > 0 && (
+        <div
+          style={{
+            fontSize: \"11px\",
+            color: \"var(--error)\",
+            padding: \"6px\",
+            backgroundColor: \"rgba(239, 68, 68, 0.1)\",
+            borderRadius: \"4px\",
+            marginTop: \"8px\",
+          }}
+        >
+          ⚠️ {topic.blockers[0]}
+        </div>
+      )}
+
+      {/* Completion estimate */}
+      {topic.estimatedCompletion && (
+        <div
+          style={{
+            fontSize: \"11px\",
+            color: \"var(--text-muted)\",
+            marginTop: \"8px\",
+            paddingTop: \"8px\",
+            borderTop: \"1px solid var(--border)\",
+          }}
+        >
+          Est: {topic.estimatedCompletion}
+        </div>
+      )}
+    </div>
+  );
+}
       onMouseEnter={(e) => {
         (e.currentTarget as HTMLElement).style.borderColor = "var(--accent)";
         (e.currentTarget as HTMLElement).style.boxShadow =

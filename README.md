@@ -1,8 +1,8 @@
-# TenacitOS — Mission Control
+# Nanico OS Cockpit
 
-A real-time dashboard and control center for [OpenClaw](https://openclaw.ai) AI agent instances. Built with Next.js, React 19, and Tailwind CSS v4.
+A real-time orchestration dashboard for personal AI agent systems. Built with Next.js 16, React 19, and Tailwind CSS v4.
 
-> **TenacitOS** lives inside your OpenClaw workspace and reads its configuration, agents, sessions, memory, and logs directly from the host. No extra database or backend required — OpenClaw is the backend.
+> **Nanico OS Cockpit** is the central visualization and control layer for the Nanico personal operating system. It provides real-time visibility into system status, topic progression, agent activity, and orchestration metrics.
 
 ---
 
@@ -76,12 +76,10 @@ The app uses `OPENCLAW_DIR` to locate `openclaw.json` and all workspaces. **No m
 
 ## Installation
 
-### 1. Clone into your OpenClaw workspace
+### 1. Clone and install
 
 ```bash
-cd /root/.openclaw/workspace   # or your OPENCLAW_DIR/workspace
-git clone https://github.com/carlosazaustre/tenacitOS.git mission-control
-cd mission-control
+cd /Users/serpa/Developer/Projects
 npm install
 ```
 
@@ -295,26 +293,26 @@ See [docs/COST-TRACKING.md](./docs/COST-TRACKING.md) for details.
 ## Project Structure
 
 ```
-mission-control/
+nanico-os-cockpit/
 ├── src/
 │   ├── app/
 │   │   ├── (dashboard)/      # Dashboard pages (protected)
 │   │   ├── api/              # API routes
 │   │   ├── login/            # Login page
-│   │   └── office/           # 3D office (unprotected route)
+│   │   └── office/           # 3D office (optional)
 │   ├── components/
-│   │   ├── TenacitOS/        # OS-style UI shell (topbar, dock, status bar)
+│   │   ├── cockpit/          # Nanico cockpit components
+│   │   ├── TenacitOS/        # OS-style UI shell
 │   │   └── Office3D/         # React Three Fiber 3D office
 │   ├── config/
-│   │   └── branding.ts       # Branding constants (reads from env vars)
-│   └── lib/                  # Utilities (pricing, queries, activity logger...)
-├── data/                     # JSON data files (gitignored — use .example versions)
-├── docs/                     # Extended documentation
-├── public/
-│   └── models/               # GLB avatar models (add your own)
-├── scripts/                  # Setup and data collection scripts
-├── .env.example              # Environment variable template
-└── middleware.ts             # Auth guard for all routes
+│   │   └── branding.ts       # Branding configuration
+│   └── lib/                  # Utilities and mock data
+├── data/                     # JSON data files
+├── docs/                     # Documentation
+├── public/                   # Static assets
+├── scripts/                  # Setup scripts
+├── .env.example              # Environment template
+└── middleware.ts             # Auth middleware
 ```
 
 ---
