@@ -86,15 +86,17 @@ export async function POST(request: NextRequest) {
   }
 
   const { password } = await request.json();
+  const adminPassword = process.env.ADMIN_PASSWORD?.trim();
+  const authSecret = process.env.AUTH_SECRET?.trim();
 
-  if (password === process.env.ADMIN_PASSWORD) {
+  if (adminPassword && authSecret && password === adminPassword) {
     clearAttempts(ip); // Reset on success
 
     const response = NextResponse.json({ success: true });
 
     // Set auth cookie (7 days expiry)
     // secure=true in production (HTTPS), false in dev (HTTP localhost)
-    response.cookies.set("mc_auth", process.env.AUTH_SECRET!, {
+    response.cookies.set("mc_auth", authSecret, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
