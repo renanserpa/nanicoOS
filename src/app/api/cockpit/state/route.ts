@@ -17,13 +17,57 @@ import { defaultCockpitState, recalculateMetrics } from "@/data/cockpit-state";
  */
 export async function GET(request: NextRequest) {
   try {
-    // TODO: Future integrations would load from real sources here
-    // e.g., const state = await loadStateFromNotion();
-    // For now, use the default state with fresh metrics
-    
-    const state = recalculateMetrics(defaultCockpitState);
+    let state = recalculateMetrics(defaultCockpitState);
+    let isHybrid = false;
 
-    return NextResponse.json(state, {
+    // Try to load real workspace data
+    const { readNotionStatus, readTopoNotionV1 } = await import("@/lib/workspace-reader");
+    const { parseTopicScore } = await import("@/lib/workspace-bridge");
+
+    const [notionStatusResult, topoResult] = await Promise.all([
+      readNotionStatus(),
+      readTopoNotionV1(),
+    ]);
+
+    // Process TOPO if available to update Notion v1 topic score
+    if (topoResult.success && topoResult.content) {
+      try {
+        const topoData = parseTopicScore(topoResult.content);
+        
+        // Find and update the Notion v1 topic if it exists
+        const notionV1Index = state.topics.findIndex(
+          (t) => t.id === "topo-1-notion-v1"
+        );
+        if (notionV1Index !== -1) {
+          state.topics[notionV1Index] = {
+            ...state.topics[notionV1Index],
+            score: topoData.score,
+            status: topoData.status,
+          };
+        }
+        
+        isHybrid = true;
+      } catch (parseError) {
+        console.warn("Failed to parse TOPO:", parseError);
+      }
+    }
+
+    // Ensure metrics are recalculated with any topic updates
+    state = recalculateMetrics(state);
+
+    // Add data source information to response
+    const responseBody = {
+      ...state,
+      _meta: {
+        dataSource: isHybrid ? "hybrid" : "mock",
+        workspaceReady: isHybrid,
+        timestamp: new Date().toISOString(),
+        notionStatusAvailable: notionStatusResult.success,
+        topoAvailable: topoResult.success,
+      },
+    };
+
+    return NextResponse.json(responseBody, {
       headers: {
         "Cache-Control": "no-store, max-age=0",
         "Content-Type": "application/json",

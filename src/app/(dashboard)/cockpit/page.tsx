@@ -16,6 +16,7 @@ export default function CockpitPage() {
   const [state, setState] = useState<CockpitState>(defaultCockpitState);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [workspaceReady, setWorkspaceReady] = useState(false);
 
   // Fetch cockpit state from API on component mount
   useEffect(() => {
@@ -24,6 +25,13 @@ export default function CockpitPage() {
         const response = await fetch("/api/cockpit/state");
         if (!response.ok) throw new Error("Failed to fetch cockpit state");
         const data = await response.json();
+
+        // Extract metadata if available
+        const meta = (data as any)._meta;
+        if (meta) {
+          setWorkspaceReady(meta.workspaceReady || false);
+        }
+
         setState(data);
         setError(null);
       } catch (err) {
@@ -51,17 +59,45 @@ export default function CockpitPage() {
       >
         <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
           <div style={{ fontSize: "28px" }}>🦞</div>
-          <div>
-            <h1
-              style={{
-                fontSize: "24px",
-                fontWeight: 700,
-                color: "var(--text-primary)",
-                margin: 0,
-              }}
-            >
-              Nanico OS Cockpit
-            </h1>
+          <div style={{ flex: 1 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "8px" }}>
+              <h1
+                style={{
+                  fontSize: "24px",
+                  fontWeight: 700,
+                  color: "var(--text-primary)",
+                  margin: 0,
+                }}
+              >
+                Nanico OS Cockpit
+              </h1>
+              {workspaceReady && (
+                <div
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    padding: "4px 10px",
+                    backgroundColor: "rgba(34, 197, 94, 0.1)",
+                    border: "1px solid rgba(34, 197, 94, 0.3)",
+                    borderRadius: "6px",
+                    fontSize: "11px",
+                    fontWeight: 600,
+                    color: "var(--success)",
+                  }}
+                >
+                  <span
+                    style={{
+                      width: "8px",
+                      height: "8px",
+                      borderRadius: "50%",
+                      backgroundColor: "var(--success)",
+                    }}
+                  />
+                  Workspace Live
+                </div>
+              )}
+            </div>
             <p
               style={{
                 fontSize: "13px",
