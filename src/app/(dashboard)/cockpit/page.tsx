@@ -9,7 +9,7 @@ import { CockpitArtifacts } from "@/components/cockpit/CockpitArtifacts";
 import { CockpitAgents } from "@/components/cockpit/CockpitAgents";
 import { CockpitState, defaultCockpitState } from "@/data/cockpit-state";
 
-type TabType = "overview" | "kanban" | "topics" | "artifacts" | "agents";
+type TabType = "overview" | "kanban" | "topics" | "artifacts" | "agents" | "control";
 
 export default function CockpitPage() {
   const [activeTab, setActiveTab] = useState<TabType>("overview");
@@ -17,6 +17,7 @@ export default function CockpitPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [workspaceReady, setWorkspaceReady] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   // Fetch cockpit state from API on component mount
   useEffect(() => {
@@ -46,6 +47,34 @@ export default function CockpitPage() {
 
     fetchCockpitState();
   }, []);
+
+  // Update topic operation
+  const updateTopicOperation = async (
+    action: string,
+    payload: Record<string, any>
+  ) => {
+    try {
+      setIsUpdating(true);
+      const response = await fetch("/api/cockpit/operations", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, payload: { ...payload, updatedBy: "user" } }),
+      });
+
+      if (!response.ok) throw new Error("Failed to update operation");
+
+      // Refresh cockpit state to reflect updated operations
+      const stateResponse = await fetch("/api/cockpit/state");
+      if (stateResponse.ok) {
+        const data = await stateResponse.json();
+        setState(data);
+      }
+    } catch (err) {
+      console.error("Error updating operation:", err);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100vh" }}>
@@ -163,6 +192,158 @@ export default function CockpitPage() {
             {activeTab === "topics" && <CockpitTopics topics={state.topics} />}
             {activeTab === "artifacts" && <CockpitArtifacts artifacts={state.artifacts} />}
             {activeTab === "agents" && <CockpitAgents agents={state.agents} topics={state.topics} />}
+            {activeTab === "control" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                <div
+                  style={{
+                    padding: "12px 16px",
+                    backgroundColor: "rgba(59, 130, 246, 0.1)",
+                    borderRadius: "8px",
+                    borderLeft: "3px solid var(--info)",
+                  }}
+                >
+                  <p style={{ margin: 0, fontSize: "13px", color: "var(--text-primary)" }}>
+                    <strong>Control Panel:</strong> Make adjustments to topics locally.
+                    Changes are saved immediately and don't affect workspace source data.
+                  </p>
+                </div>
+
+                {state.topics.map((topic) => (
+                  <div
+                    key={topic.id}
+                    style={{
+                      padding: "16px",
+                      backgroundColor: "var(--card)",
+                      borderRadius: "8px",
+                      border: "1px solid var(--border)",
+                    }}
+                  >
+                    <h3 style={{ margin: "0 0 12px 0", fontSize: "14px", fontWeight: 600 }}>
+                      {topic.name}
+                    </h3>
+                    <p
+                      style={{
+                        margin: "0 0 12px 0",
+                        fontSize: "12px",
+                        color: "var(--text-secondary)",
+                      }}
+                    >
+                      Current: {topic.score}/100 • {topic.status}
+                    </p>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "8px",
+                      }}
+                    >
+                      <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                        <button
+                          onClick={() =>
+                            updateTopicOperation("updateStatus", {
+                              topicId: topic.id,
+                              status: "queued",
+                            })
+                          }
+                          disabled={isUpdating || topic.status === "queued"}
+                          style={{
+                            padding: "6px 12px",
+                            fontSize: "11px",
+                            borderRadius: "4px",
+                            border: "1px solid var(--border)",
+                            backgroundColor:
+                              topic.status === "queued"
+                                ? "rgba(251, 146, 60, 0.2)"
+                                : "transparent",
+                            color: "var(--text-secondary)",
+                            cursor: isUpdating ? "not-allowed" : "pointer",
+                            opacity: isUpdating ? 0.5 : 1,
+                          }}
+                        >
+                          Queued
+                        </button>
+                        <button
+                          onClick={() =>
+                            updateTopicOperation("updateStatus", {
+                              topicId: topic.id,
+                              status: "in-progress",
+                            })
+                          }
+                          disabled={isUpdating || topic.status === "in-progress"}
+                          style={{
+                            padding: "6px 12px",
+                            fontSize: "11px",
+                            borderRadius: "4px",
+                            border: "1px solid var(--border)",
+                            backgroundColor:
+                              topic.status === "in-progress"
+                                ? "rgba(59, 130, 246, 0.2)"
+                                : "transparent",
+                            color: "var(--text-secondary)",
+                            cursor: isUpdating ? "not-allowed" : "pointer",
+                            opacity: isUpdating ? 0.5 : 1,
+                          }}
+                        >
+                          In Progress
+                        </button>
+                        <button
+                          onClick={() =>
+                            updateTopicOperation("updateStatus", {
+                              topicId: topic.id,
+                              status: "done",
+                            })
+                          }
+                          disabled={isUpdating || topic.status === "done"}
+                          style={{
+                            padding: "6px 12px",
+                            fontSize: "11px",
+                            borderRadius: "4px",
+                            border: "1px solid var(--border)",
+                            backgroundColor:
+                              topic.status === "done"
+                                ? "rgba(34, 197, 94, 0.2)"
+                                : "transparent",
+                            color: "var(--text-secondary)",
+                            cursor: isUpdating ? "not-allowed" : "pointer",
+                            opacity: isUpdating ? 0.5 : 1,
+                          }}
+                        >
+                          Done
+                        </button>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
+                          Score:
+                        </span>
+                        <input
+                          type="range"
+                          min="0"
+                          max="100"
+                          value={topic.score}
+                          onChange={(e) =>
+                            updateTopicOperation("updateScore", {
+                              topicId: topic.id,
+                              score: parseInt(e.target.value, 10),
+                            })
+                          }
+                          disabled={isUpdating}
+                          style={{ flex: 1, cursor: isUpdating ? "not-allowed" : "pointer", opacity: isUpdating ? 0.5 : 1 }}
+                        />
+                        <span
+                          style={{
+                            fontSize: "12px",
+                            fontWeight: 600,
+                            minWidth: "35px",
+                          }}
+                        >
+                          {topic.score}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </>
         )}
       </div>

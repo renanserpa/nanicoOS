@@ -15,6 +15,7 @@ export function CockpitNavigation({
     { id: "overview", label: "Overview", icon: "📊" },
     { id: "kanban", label: "Kanban", icon: "📋" },
     { id: "topics", label: "Topics & Scores", icon: "🎯" },
+    { id: "control", label: "Control Panel", icon: "🎚️" },
     { id: "artifacts", label: "Artifacts", icon: "📦" },
     { id: "agents", label: "Agents", icon: "🤖" },
   ];

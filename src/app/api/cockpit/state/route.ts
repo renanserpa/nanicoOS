@@ -55,6 +55,22 @@ export async function GET(request: NextRequest) {
     // Ensure metrics are recalculated with any topic updates
     state = recalculateMetrics(state);
 
+    // Merge local operations (user edits) into state
+    try {
+      const { mergeOperationsIntoState } = await import("@/lib/cockpit-operations");
+      const { promises: fs } = await import("fs");
+      const { resolve } = await import("path");
+      
+      const operationsFile = resolve(process.cwd(), "data", "cockpit-operations.json");
+      const operationsContent = await fs.readFile(operationsFile, "utf-8");
+      const operations = JSON.parse(operationsContent);
+      
+      state = mergeOperationsIntoState(state, operations);
+      state = recalculateMetrics(state);
+    } catch {
+      // Operations file may not exist yet, that's fine
+    }
+
     // Add data source information to response
     const responseBody = {
       ...state,
