@@ -5,6 +5,40 @@
  * Future integrations (Supabase, Notion, Obsidian) will update this structure.
  */
 
+export interface BackendStatus {
+  available: boolean;
+  lastChecked: string;
+  error?: string;
+}
+
+export interface NotionStatus extends BackendStatus {
+  databases?: {
+    count: number;
+    types: string[];
+  };
+  status?: string;
+  lastSync?: string;
+}
+
+export interface ObsidianStatus extends BackendStatus {
+  vaultName?: string;
+  noteCount?: number;
+  mainIndexes?: string[];
+  lastModified?: string;
+}
+
+export interface SupabaseStatus extends BackendStatus {
+  status: "planned" | "reserved" | "connecting" | "active";
+  message: string;
+}
+
+export interface ExternalBackends {
+  notion: NotionStatus;
+  obsidian: ObsidianStatus;
+  supabase: SupabaseStatus;
+  lastUpdated: string;
+}
+
 export interface CockpitState {
   lastUpdated: string; // ISO timestamp
   topics: Array<{
@@ -45,6 +79,7 @@ export interface CockpitState {
     averageScore: number;
     uptime: string;
   };
+  externalBackends?: ExternalBackends; // Phase 5: External backend visibility
 }
 
 /**
@@ -362,6 +397,26 @@ export const defaultCockpitState: CockpitState = {
     blockedTopics: 2,
     averageScore: 44.3,
     uptime: "100%",
+  },
+
+  // Phase 5: External backends — real read-only visibility
+  externalBackends: {
+    notion: {
+      available: false,
+      lastChecked: new Date().toISOString(),
+      status: "pending",
+    },
+    obsidian: {
+      available: false,
+      lastChecked: new Date().toISOString(),
+    },
+    supabase: {
+      available: false,
+      lastChecked: new Date().toISOString(),
+      status: "planned",
+      message: "Reserved for Phase 6 — Database backend provisioning",
+    },
+    lastUpdated: new Date().toISOString(),
   },
 };
 

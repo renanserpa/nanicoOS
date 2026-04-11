@@ -18,6 +18,7 @@ export function CockpitNavigation({
     { id: "control", label: "Control Panel", icon: "🎚️" },
     { id: "artifacts", label: "Artifacts", icon: "📦" },
     { id: "agents", label: "Agents", icon: "🤖" },
+    { id: "external", label: "External Backends", icon: "🌐" },
   ];
 
   return (

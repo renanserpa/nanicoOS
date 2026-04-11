@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
     if (topoResult.success && topoResult.content) {
       try {
         const topoData = parseTopicScore(topoResult.content);
-        
+
         // Find and update the Notion v1 topic if it exists
         const notionV1Index = state.topics.findIndex(
           (t) => t.id === "topo-1-notion-v1"
@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
             status: topoData.status,
           };
         }
-        
+
         isHybrid = true;
       } catch (parseError) {
         console.warn("Failed to parse TOPO:", parseError);
@@ -60,15 +60,31 @@ export async function GET(request: NextRequest) {
       const { mergeOperationsIntoState } = await import("@/lib/cockpit-operations");
       const { promises: fs } = await import("fs");
       const { resolve } = await import("path");
-      
+
       const operationsFile = resolve(process.cwd(), "data", "cockpit-operations.json");
       const operationsContent = await fs.readFile(operationsFile, "utf-8");
       const operations = JSON.parse(operationsContent);
-      
+
       state = mergeOperationsIntoState(state, operations);
       state = recalculateMetrics(state);
     } catch {
       // Operations file may not exist yet, that's fine
+    }
+
+    // Phase 5: Fetch external backend status (read-only bridges)
+    try {
+      const { getAllExternalBridges } = await import("@/lib/external-bridges");
+      const externalData = await getAllExternalBridges();
+
+      state.externalBackends = {
+        notion: externalData.notion,
+        obsidian: externalData.obsidian,
+        supabase: externalData.supabase,
+        lastUpdated: externalData.timestamp,
+      };
+    } catch (error) {
+      console.warn("Failed to fetch external backends:", error);
+      // Keep default external backends in state — don't fail the entire request
     }
 
     // Add data source information to response
@@ -80,6 +96,7 @@ export async function GET(request: NextRequest) {
         timestamp: new Date().toISOString(),
         notionStatusAvailable: notionStatusResult.success,
         topoAvailable: topoResult.success,
+        phase5ExternalBackendsEnabled: true,
       },
     };
 

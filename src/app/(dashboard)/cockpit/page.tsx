@@ -7,9 +7,10 @@ import { CockpitKanban } from "@/components/cockpit/CockpitKanban";
 import { CockpitTopics } from "@/components/cockpit/CockpitTopics";
 import { CockpitArtifacts } from "@/components/cockpit/CockpitArtifacts";
 import { CockpitAgents } from "@/components/cockpit/CockpitAgents";
+import { CockpitExternalBackends } from "@/components/cockpit/CockpitExternalBackends";
 import { CockpitState, defaultCockpitState } from "@/data/cockpit-state";
 
-type TabType = "overview" | "kanban" | "topics" | "artifacts" | "agents" | "control";
+type TabType = "overview" | "kanban" | "topics" | "artifacts" | "agents" | "control" | "external";
 
 export default function CockpitPage() {
   const [activeTab, setActiveTab] = useState<TabType>("overview");
@@ -192,6 +193,9 @@ export default function CockpitPage() {
             {activeTab === "topics" && <CockpitTopics topics={state.topics} />}
             {activeTab === "artifacts" && <CockpitArtifacts artifacts={state.artifacts} />}
             {activeTab === "agents" && <CockpitAgents agents={state.agents} topics={state.topics} />}
+            {activeTab === "external" && (
+              <CockpitExternalBackends backends={state.externalBackends} />
+            )}
             {activeTab === "control" && (
               <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                 <div
