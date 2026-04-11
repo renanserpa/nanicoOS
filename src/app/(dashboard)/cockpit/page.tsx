@@ -1,18 +1,43 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CockpitNavigation } from "@/components/cockpit/CockpitNavigation";
 import { CockpitOverview } from "@/components/cockpit/CockpitOverview";
 import { CockpitKanban } from "@/components/cockpit/CockpitKanban";
 import { CockpitTopics } from "@/components/cockpit/CockpitTopics";
 import { CockpitArtifacts } from "@/components/cockpit/CockpitArtifacts";
 import { CockpitAgents } from "@/components/cockpit/CockpitAgents";
-import { mockMetrics } from "@/lib/cockpit-data";
+import { CockpitState, defaultCockpitState } from "@/data/cockpit-state";
 
 type TabType = "overview" | "kanban" | "topics" | "artifacts" | "agents";
 
 export default function CockpitPage() {
   const [activeTab, setActiveTab] = useState<TabType>("overview");
+  const [state, setState] = useState<CockpitState>(defaultCockpitState);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch cockpit state from API on component mount
+  useEffect(() => {
+    const fetchCockpitState = async () => {
+      try {
+        const response = await fetch("/api/cockpit/state");
+        if (!response.ok) throw new Error("Failed to fetch cockpit state");
+        const data = await response.json();
+        setState(data);
+        setError(null);
+      } catch (err) {
+        console.error("Error fetching cockpit state:", err);
+        setError(err instanceof Error ? err.message : "Unknown error");
+        // Fall back to default state on error
+        setState(defaultCockpitState);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCockpitState();
+  }, []);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100vh" }}>
@@ -45,6 +70,12 @@ export default function CockpitPage() {
               }}
             >
               Central orchestration dashboard
+              {!isLoading && state.lastUpdated && (
+                <span style={{ fontSize: "11px", opacity: 0.6 }}>
+                  {" "}
+                  • Updated {new Date(state.lastUpdated).toLocaleTimeString()}
+                </span>
+              )}
             </p>
           </div>
         </div>
@@ -61,11 +92,43 @@ export default function CockpitPage() {
           padding: "24px",
         }}
       >
-        {activeTab === "overview" && <CockpitOverview metrics={mockMetrics} />}
-        {activeTab === "kanban" && <CockpitKanban />}
-        {activeTab === "topics" && <CockpitTopics />}
-        {activeTab === "artifacts" && <CockpitArtifacts />}
-        {activeTab === "agents" && <CockpitAgents />}
+        {error && (
+          <div
+            style={{
+              padding: "16px",
+              backgroundColor: "rgba(239, 68, 68, 0.1)",
+              borderRadius: "8px",
+              color: "var(--error)",
+              marginBottom: "16px",
+            }}
+          >
+            Error loading cockpit state: {error}
+          </div>
+        )}
+
+        {isLoading ? (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              height: "100%",
+              color: "var(--text-secondary)",
+            }}
+          >
+            Loading cockpit state...
+          </div>
+        ) : (
+          <>
+            {activeTab === "overview" && (
+              <CockpitOverview metrics={state.metrics} lastUpdated={state.lastUpdated} />
+            )}
+            {activeTab === "kanban" && <CockpitKanban topics={state.topics} />}
+            {activeTab === "topics" && <CockpitTopics topics={state.topics} />}
+            {activeTab === "artifacts" && <CockpitArtifacts artifacts={state.artifacts} />}
+            {activeTab === "agents" && <CockpitAgents agents={state.agents} topics={state.topics} />}
+          </>
+        )}
       </div>
     </div>
   );

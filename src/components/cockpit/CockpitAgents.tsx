@@ -3,10 +3,16 @@
  * Agent roles and capabilities
  */
 
-import { mockAgents, getAgentTopics } from "@/lib/cockpit-data";
+import { CockpitState } from "@/data/cockpit-state";
 import { Circle, Zap, CheckCircle } from "lucide-react";
 
-export function CockpitAgents() {
+interface CockpitAgentsProps {
+  agents: CockpitState["agents"];
+  topics: CockpitState["topics"];
+}
+
+export function CockpitAgents({ agents, topics }: CockpitAgentsProps) {
+  const getAgentTopics = (agentName: string) => topics.filter((t) => t.executor === agentName);
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
       <div>
@@ -26,7 +32,7 @@ export function CockpitAgents() {
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "20px" }}>
-        {mockAgents.map((agent) => {
+        {agents.map((agent) => {
           const topics = getAgentTopics(agent.name);
           const activeTopic = topics.find((t) => t.status === "in-progress");
 

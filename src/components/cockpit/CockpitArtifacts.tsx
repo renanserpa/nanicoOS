@@ -3,7 +3,7 @@
  * Grouped by front/initiative
  */
 
-import { mockArtifacts, getUniqueFronts, getArtifactsByFront } from "@/lib/cockpit-data";
+import { CockpitState } from "@/data/cockpit-state";
 import { FileText, Link2, Folder, Archive } from "lucide-react";
 
 const typeIcons = {
@@ -13,8 +13,13 @@ const typeIcons = {
   workspace: <Folder style={{ width: "16px", height: "16px" }} />,
 };
 
-export function CockpitArtifacts() {
-  const fronts = getUniqueFronts();
+interface CockpitArtifactsProps {
+  artifacts: CockpitState["artifacts"];
+}
+
+export function CockpitArtifacts({ artifacts }: CockpitArtifactsProps) {
+  const fronts = [...new Set(artifacts.map((a) => a.front))].sort();
+  const getArtifactsByFront = (front: string) => artifacts.filter((a) => a.front === front);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>

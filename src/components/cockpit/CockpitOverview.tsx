@@ -3,7 +3,7 @@
  * System summary and key metrics
  */
 
-import { SystemMetrics } from "@/lib/cockpit-data";
+import { CockpitState } from "@/data/cockpit-state";
 import {
   CheckCircle,
   Circle,
@@ -14,10 +14,11 @@ import {
 } from "lucide-react";
 
 interface CockpitOverviewProps {
-  metrics: SystemMetrics;
+  metrics: CockpitState["metrics"];
+  lastUpdated: string;
 }
 
-export function CockpitOverview({ metrics }: CockpitOverviewProps) {
+export function CockpitOverview({ metrics, lastUpdated }: CockpitOverviewProps) {
   const scorePercentage = Math.round(metrics.averageScore);
 
   return (
@@ -232,9 +233,14 @@ export function CockpitOverview({ metrics }: CockpitOverviewProps) {
           padding: "20px",
         }}
       >
-        <h3 style={{ color: "var(--text-primary)", marginBottom: "12px", fontWeight: 600 }}>
-          Current Status
-        </h3>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12px" }}>
+          <h3 style={{ color: "var(--text-primary)", margin: 0, fontWeight: 600 }}>
+            Current Status
+          </h3>
+          <span style={{ color: "var(--text-muted)", fontSize: "12px" }}>
+            Last updated: {new Date(lastUpdated).toLocaleTimeString()}
+          </span>
+        </div>
         <p style={{ color: "var(--text-secondary)", lineHeight: "1.6", fontSize: "14px" }}>
           Nanico OS is operating as the central orchestrator and context maintainer. The system
           is actively managing <strong>{metrics.inProgressTopics} concurrent initiatives</strong> with

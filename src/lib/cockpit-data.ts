@@ -48,7 +48,7 @@ export interface SystemMetrics {
 
 // ============= MOCK DATA =============
 
-export const : Topic[] = [
+export const mockTopics: Topic[] = [
   // COMPLETED INITIATIVES
   {
     id: "ccn-notion",
@@ -247,7 +247,7 @@ export const mockAgents: Agent[] = [
   },
 ];
 
-export const : Artifact[] = [
+export const mockArtifacts: Artifact[] = [
   {
     id: "handoff-cockpit-v1",
     name: "HANDOFF — Cockpit V1 Launch",

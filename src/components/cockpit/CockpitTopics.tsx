@@ -3,15 +3,18 @@
  * Detailed view of all topics with progression
  */
 
-import { mockTopics, Topic } from "@/lib/cockpit-data";
-import { TrendingUp, AlertCircle, CheckCircle } from "lucide-react";
+import { CockpitState } from "@/data/cockpit-state";
+import { AlertCircle } from "lucide-react";
 
-export function CockpitTopics() {
-  const sortedTopics = [...mockTopics].sort((a, b) => {
+interface CockpitTopicsProps {
+  topics: CockpitState["topics"];
+}
+
+export function CockpitTopics({ topics }: CockpitTopicsProps) {
+  const sortedTopics = [...topics].sort((a, b) => {
     // Sort by: blocked → in-progress → queued → done
     const statusOrder = { blocked: 0, "in-progress": 1, queued: 2, done: 3 };
-    const statusDiff =
-      statusOrder[a.status] - statusOrder[b.status];
+    const statusDiff = statusOrder[a.status] - statusOrder[b.status];
     if (statusDiff !== 0) return statusDiff;
     // Then by score (descending)
     return b.score - a.score;
@@ -127,145 +130,57 @@ export function CockpitTopics() {
   );
 }
 
-({ topic, isLast }: { topic: Topic; isLast: boolean }) {
+function TopicRow({
+  topic,
+  isLast,
+}: {
+  topic: CockpitState["topics"][number];
+  isLast: boolean;
+}) {
   const statusColors = {
-    done: { bg: \"rgba(16, 185, 129, 0.1)\", text: \"var(--success)\" },
-    \"in-progress\": { bg: \"rgba(59, 130, 246, 0.1)\", text: \"var(--info)\" },
-    queued: { bg: \"rgba(217, 119, 6, 0.1)\", text: \"var(--warning)\" },
-    blocked: { bg: \"rgba(239, 68, 68, 0.1)\", text: \"var(--error)\" },
+    done: { bg: "rgba(16, 185, 129, 0.1)", text: "var(--success)" },
+    "in-progress": { bg: "rgba(59, 130, 246, 0.1)", text: "var(--info)" },
+    queued: { bg: "rgba(217, 119, 6, 0.1)", text: "var(--warning)" },
+    blocked: { bg: "rgba(239, 68, 68, 0.1)", text: "var(--error)" },
   };
 
   const statusLabels = {
-    done: \"Done\",
-    \"in-progress\": \"In Progress\",
-    queued: \"Queued\",
-    blocked: \"Blocked\",
+    done: "Done",
+    "in-progress": "In Progress",
+    queued: "Queued",
+    blocked: "Blocked",
   };
 
   const scoreColor =
     topic.score === 100
-      ? \"var(--success)\"
+      ? "var(--success)"
       : topic.score >= 50
-        ? \"var(--info)\"
+        ? "var(--info)"
         : topic.score > 0
-          ? \"var(--warning)\"
-          : \"var(--text-muted)\";
+          ? "var(--warning)"
+          : "var(--text-muted)";
 
   const colors = statusColors[topic.status];
-  const isBlocked = topic.status === \"blocked\";
-  const isInProgress = topic.status === \"in-progress\";
+  const isBlocked = topic.status === "blocked";
+  const isInProgress = topic.status === "in-progress";
 
   return (
     <div
       style={{
-        display: \"grid\",
-        gridTemplateColumns: \"1fr 120px 100px 120px 100px\",
-        gap: \"16px\",
-        padding: \"16px\",
-        borderBottom: isLast ? \"none\" : \"1px solid var(--border)\",
-        alignItems: \"center\",
-        backgroundColor: \"var(--card)\",
-        borderLeft: isBlocked ? \"4px solid var(--error)\" : isInProgress ? \"4px solid var(--info)\" : \"4px solid transparent\",
-        transition: \"background-color 0.2s\",
+        display: "grid",
+        gridTemplateColumns: "1fr 120px 100px 120px 100px",
+        gap: "16px",
+        padding: "16px",
+        borderBottom: isLast ? "none" : "1px solid var(--border)",
+        alignItems: "center",
+        backgroundColor: "var(--card)",
+        borderLeft: isBlocked
+          ? "4px solid var(--error)"
+          : isInProgress
+            ? "4px solid var(--info)"
+            : "4px solid transparent",
+        transition: "background-color 0.2s",
       }}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLElement).style.backgroundColor = \"var(--card-elevated)\";
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLElement).style.backgroundColor = \"var(--card)\";
-      }}
-    >
-      {/* Topic Name + Blockers */}
-      <div>
-        <div
-          style={{
-            color: \"var(--text-primary)\",
-            fontWeight: 600,
-            fontSize: \"14px\",
-            marginBottom: \"4px\",
-          }}
-        >
-          {topic.name}
-        </div>
-        {topic.blockers && topic.blockers.length > 0 && (
-          <div
-            style={{
-              fontSize: \"11px\",
-              color: \"var(--error)\",
-              display: \"flex\",
-              alignItems: \"center\",
-              gap: \"4px\",
-            }}
-          >
-            <AlertCircle style={{ width: \"12px\", height: \"12px\" }} />
-            {topic.blockers[0]}
-          </div>
-        )}
-      </div>
-
-      {/* Status Badge */}
-      <div
-        style={{
-          backgroundColor: colors.bg,
-          color: colors.text,
-          padding: \"6px 10px\",
-          borderRadius: \"6px\",
-          fontSize: \"12px\",
-          fontWeight: 600,
-          textAlign: \"center\",
-        }}
-      >
-        {statusLabels[topic.status]}
-      </div>
-
-      {/* Score */}
-      <div style={{ textAlign: \"center\" }}>
-        <div
-          style={{
-            fontSize: \"18px\",
-            fontWeight: 700,
-            color: scoreColor,
-            marginBottom: \"4px\",
-          }}
-        >
-          {topic.score}
-        </div>
-        <div
-          style={{
-            height: \"4px\",
-            backgroundColor: \"var(--border)\",
-            borderRadius: \"2px\",
-            overflow: \"hidden\",
-          }}
-        >
-          <div
-            style={{
-              height: \"100%\",
-              width: `${topic.score}%`,
-              backgroundColor: scoreColor,
-            }}
-          />
-        </div>
-      </div>
-
-      {/* Executor */}
-      <div style={{ fontSize: \"13px\", color: \"var(--text-secondary)\" }}>
-        {topic.executor}
-      </div>
-
-      {/* Estimated Completion */}
-      <div
-        style={{
-          fontSize: \"12px\",
-          color: \"var(--text-muted)\",
-          textAlign: \"right\",
-        }}
-      >
-        {topic.estimatedCompletion || \"-\"}
-      </div>
-    </div>
-  );
-}
       onMouseEnter={(e) => {
         (e.currentTarget as HTMLElement).style.backgroundColor = "var(--card-elevated)";
       }}
