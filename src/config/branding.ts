@@ -1,20 +1,21 @@
 /**
  * Branding Configuration
- * 
+ *
  * Customize this file to match your instance's branding.
  * This keeps personal/instance-specific data out of the main codebase.
  */
 
-export const {
+export const BRANDING = {
   // Main agent name and emoji
   agentName: process.env.NEXT_PUBLIC_AGENT_NAME || "Nanico OS",
   agentEmoji: process.env.NEXT_PUBLIC_AGENT_EMOJI || "🦞",
 
   // About page — agent identity
   agentLocation: process.env.NEXT_PUBLIC_AGENT_LOCATION || "",
-  birthDate: process.env.NEXT_PUBLIC_BIRTH_DATE || "",          // ISO date, e.g. "2026-01-01"
-  agentAvatar: process.env.NEXT_PUBLIC_AGENT_AVATAR || "",      // path under /public, e.g. "/avatar.jpg"
-  agentDescription: process.env.NEXT_PUBLIC_AGENT_DESCRIPTION || "Personal orchestration system", // one-line description
+  birthDate: process.env.NEXT_PUBLIC_BIRTH_DATE || "", // ISO date, e.g. "2026-01-01"
+  agentAvatar: process.env.NEXT_PUBLIC_AGENT_AVATAR || "", // path under /public, e.g. "/avatar.jpg"
+  agentDescription:
+    process.env.NEXT_PUBLIC_AGENT_DESCRIPTION || "Personal orchestration system", // one-line description
 
   // User/owner information (optional - used in workflow descriptions)
   ownerUsername: process.env.NEXT_PUBLIC_OWNER_USERNAME || "nanico",
@@ -29,7 +30,7 @@ export const {
 
   // App title (shown in browser tab)
   appTitle: process.env.NEXT_PUBLIC_APP_TITLE || "Nanico OS Cockpit",
-} as const;;
+} as const;
 
 // Helper to get full agent display name
 export function getAgentDisplayName(): string {
