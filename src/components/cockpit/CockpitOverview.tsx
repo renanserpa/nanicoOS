@@ -4,6 +4,7 @@
  */
 
 import { CockpitState } from "@/data/cockpit-state";
+import { CockpitBackends } from "./CockpitBackends";
 import {
   CheckCircle,
   Circle,
@@ -222,6 +223,21 @@ export function CockpitOverview({ metrics, lastUpdated }: CockpitOverviewProps) 
             Operational
           </div>
         </div>
+      </div>
+
+      {/* External Backends Status */}
+      <div>
+        <h3
+          style={{
+            fontSize: "16px",
+            fontWeight: 600,
+            color: "var(--text-primary)",
+            marginBottom: "12px",
+          }}
+        >
+          🌐 External Backends
+        </h3>
+        <CockpitBackends />
       </div>
 
       {/* System Status Text */}
